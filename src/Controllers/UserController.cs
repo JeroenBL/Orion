@@ -1,12 +1,13 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Orion.Models;
 using Orion.Services;
-using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SQLite;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Net.Mime;
 
 namespace Orion.Controllers
 {
@@ -14,7 +15,6 @@ namespace Orion.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-
         private IDataAccessService _dataAccesService;
         IDbConnection _sqliteConnection;
 
@@ -26,7 +26,8 @@ namespace Orion.Controllers
 
         // GET: api/<UserController>
         [HttpGet]
-        public List<UserModel> Get()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult <List<UserModel>> Get()
         {
             using (_sqliteConnection)
             {
@@ -35,33 +36,46 @@ namespace Orion.Controllers
             }
         }
 
-        // GET api/<UserController>/5
-        [HttpGet("{id}")]
-        public IEnumerable<UserModel> Get(int id)
+        // GET: api/<UserController>
+        [HttpGet("{externalId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<List<UserModel>> Get(string externalId)
         {
             using (_sqliteConnection)
             {
-                var output = _sqliteConnection.Query<UserModel>("SELECT * FROM users WHERE Id = {id}", new DynamicParameters());
-                return output.ToList().Where(s => s.Id == id);
+                var result = _sqliteConnection.Query<UserModel>($"SELECT * FROM 'users' WHERE ExternalId = {externalId}", new DynamicParameters()).ToList();
+                if (result.Count <= 0)
+                {
+                    return NotFound($"User with externalId {externalId} could not be found");
+                }
+                else
+                {
+                    return Ok(result[0]);
+                }
             }
         }
 
         // POST api/<UserController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        [Consumes(MediaTypeNames.Application.Json)]
+        public ActionResult Post([FromBody] UserModel user)
         {
-        }
-
-        // PUT api/<UserController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<UserController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            try
+            {
+                using (_sqliteConnection)
+                {
+                    string query = $"INSERT INTO 'users' (ExternalId, FirstName, FamilyName, EmailAddress, PhoneNumber, Title, Description) " +
+                            "values (@ExternalId, @FirstName, @FamilyName, @EmailAddress, @PhoneNumber, @Title, @Description)";
+                    _sqliteConnection.Execute(query, user);
+                    var result = _sqliteConnection.Query<UserModel>($"SELECT * FROM 'users' WHERE ExternalId = {user.ExternalId}", new DynamicParameters()).ToList();
+                    return Ok(result[0]);
+                }
+            }
+            catch (SQLiteException sqliteEx)
+            {
+                return BadRequest(sqliteEx.Message);
+            }
         }
     }
 }
