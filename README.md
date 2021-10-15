@@ -2,6 +2,10 @@
 
 ORION is a simple ASP.NET provisioning target API. 
 
+<p align="center">
+  <img src="orionLogo.png">
+</p>
+
 ## Table of contents
 
 * [Prerequisites](#Prerequisites)
