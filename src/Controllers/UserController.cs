@@ -68,7 +68,7 @@ namespace Orion.Controllers
                     string query = $"INSERT INTO 'users' (ExternalId, FirstName, FamilyName, EmailAddress, PhoneNumber, Title, Description) " +
                             "values (@ExternalId, @FirstName, @FamilyName, @EmailAddress, @PhoneNumber, @Title, @Description)";
                     _sqliteConnection.Execute(query, user);
-                    var result = _sqliteConnection.Query<UserModel>($"SELECT * FROM 'users' WHERE ExternalId = {user.ExternalId}", new DynamicParameters()).ToList();
+                    var result = _sqliteConnection.Query<UserModel>($"SELECT * FROM 'users' WHERE ExternalId = '{user.ExternalId}'", new DynamicParameters()).ToList();
                     return Ok(result[0]);
                 }
             }
