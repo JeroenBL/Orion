@@ -44,7 +44,7 @@ namespace Orion.Controllers
         {
             using (_sqliteConnection)
             {
-                var result = _sqliteConnection.Query<UserModel>($"SELECT * FROM 'users' WHERE ExternalId = {externalId}", new DynamicParameters()).ToList();
+                var result = _sqliteConnection.Query<UserModel>($"SELECT * FROM 'users' WHERE ExternalId = '{externalId}'", new DynamicParameters()).ToList();
                 if (result.Count <= 0)
                 {
                     return NotFound($"User with externalId {externalId} could not be found");
@@ -70,6 +70,48 @@ namespace Orion.Controllers
                     _sqliteConnection.Execute(query, user);
                     var result = _sqliteConnection.Query<UserModel>($"SELECT * FROM 'users' WHERE ExternalId = '{user.ExternalId}'", new DynamicParameters()).ToList();
                     return Ok(result[0]);
+                }
+            }
+            catch (SQLiteException sqliteEx)
+            {
+                return BadRequest(sqliteEx.Message);
+            }
+        }
+
+        // POST api/<UserController>
+        [HttpPost("Permission")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public ActionResult Post([FromBody] PermissionModel permission)
+        {
+            try
+            {
+                using (_sqliteConnection)
+                {
+                    string query = $"INSERT INTO 'permissions' (DisplayName, UserId) " +
+                            "values (@DisplayName, @UserId)";
+                    _sqliteConnection.Execute(query, permission);
+                    var result = _sqliteConnection.Query<PermissionModel>($"SELECT * FROM 'permissions' WHERE displayName = '{permission.DisplayName}'", new DynamicParameters()).ToList();
+                    return Ok(result[0]);
+                }
+            }
+            catch (SQLiteException sqliteEx)
+            {
+                return BadRequest(sqliteEx.Message);
+            }
+        }
+
+        // Delete api/<UserController>
+        [HttpDelete("{id}")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public ActionResult Delete(string id)
+        {
+            try
+            {
+                using (_sqliteConnection)
+                {
+                    string query = $"Delete FROM 'users' WHERE Id = '{id}'";
+                    _sqliteConnection.Execute(query);
+                    return Ok();
                 }
             }
             catch (SQLiteException sqliteEx)
