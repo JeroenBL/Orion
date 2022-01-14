@@ -1,28 +1,3 @@
-.note+p { /*next paragraph after <div class="note"></div>*/
-    padding: 8px 35px 8px 14px;
-    margin-bottom: 20px;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-    border-radius: 4px;
-    color: #3a87ad;
-    background-color: #d9edf7;
-    border-color: #bce8f1;
-}
-
-.note+p:before { /*aditionally prepend `⚠ Note:` to message: */ 
-    content: "⚠ Note:";
-    font-weight: bold;
-    display: block;
-}
-
-| :warning: <b> Note that this is connector is 'a work in progress' and therefore not ready to use in your production environment. </b> |
-| --- |
-
-<body>
-<div class="note">       
-    **NOTE**: Source [here](//developer.run)
-</div>
- </body>
-
 # O R I O N
 
 ORION is a simple ASP.NET provisioning target API. 
